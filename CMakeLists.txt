@@ -7,9 +7,21 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+# PIC static archive so a shared library can absorb these objects.
+# The shared library is the wwlock package. Dependents link the static target.
 add_library(wwlock STATIC src/wwlock.c src/wwlock_futex.c)
+set_target_properties(wwlock PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME wwlock)
 target_include_directories(wwlock PUBLIC include)
 target_compile_options(wwlock PRIVATE -Wall -Wextra -Werror)
+
+add_library(wwlock_shared SHARED src/wwlock.c src/wwlock_futex.c)
+set_target_properties(wwlock_shared PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME wwlock)
+target_include_directories(wwlock_shared PUBLIC include)
+target_compile_options(wwlock_shared PRIVATE -Wall -Wextra -Werror)
+
+if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    return()
+endif()
 
 add_library(wwlock_posix STATIC test/park_posix.c)
 target_include_directories(wwlock_posix PUBLIC test include)
